@@ -7,4 +7,4 @@
    :iterate
    :metabang-bind
    :split-sequence)
-  (:export :smt :*solver*))
+  (:export :*solver* :smt :solver :>> :<<))
