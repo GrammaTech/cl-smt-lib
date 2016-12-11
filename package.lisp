@@ -6,5 +6,6 @@
    :curry-compose-reader-macros
    :iterate
    :metabang-bind
-   :split-sequence)
+   :split-sequence
+   :cl-ppcre)
   (:export :*solver* :smt :solver :>> :<<))

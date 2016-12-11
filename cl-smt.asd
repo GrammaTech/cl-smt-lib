@@ -8,6 +8,7 @@
                curry-compose-reader-macros
                iterate
                metabang-bind
-               split-sequence)
+               split-sequence
+               cl-ppcre)
   :components ((:file "package")
                (:file "smt" :depends-on ("package"))))
