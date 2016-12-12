@@ -51,4 +51,9 @@
     (setf *readtable* (pop *previous-readtables*))))
 
 (defun smt (stream forms)
-  (mapc {format stream "~a~%~%"} (cdr forms)))
+  ;; Setting the `readtable-case' to :PRESERVE ensures `format'
+  ;; doesn't print pipes around variable names.
+  (let ((*readtable* (copy-readtable nil)))
+    (setf (readtable-case *readtable*) :preserve)
+    (mapc {format stream "~S~%~%"} forms)
+    (finish-output stream)))
