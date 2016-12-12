@@ -1,12 +1,7 @@
 (defpackage :cl-smt
-  (:use
-   :common-lisp
-   :alexandria
-   :cl-arrows
-   :curry-compose-reader-macros
-   :iterate
-   :metabang-bind
-   :split-sequence)
+  (:use :common-lisp)
   (:export
+   :smt
+   :program-stream
    :enable-preserving-case-syntax
    :disable-preserving-case-syntax))
