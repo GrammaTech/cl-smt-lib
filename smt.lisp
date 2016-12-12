@@ -14,25 +14,6 @@
       (make-two-way-stream (sb-ext:process-output process)
                            (sb-ext:process-input process)))))
 
-;; This works well, as in the following.
-;; CL-SMT> (defparameter *stream* (program-stream "z3 -in -smt2"))
-;; Evaluation aborted on #<SIMPLE-ERROR "Couldn't execute ~S: ~A" {1005AA2833}>.
-;; CL-SMT> (defparameter *stream* (program-stream "z3" '("-in" "-smt2")))
-;; *STREAM*
-;; CL-SMT> (format *stream* "(set-logic SCHULTE)")
-;; NIL
-;; CL-SMT> (finish-output *stream*)
-;; NIL
-;; CL-SMT> (read-line *stream*)
-;; "unsupported"
-;; NIL
-;; CL-SMT> (read-line *stream*)
-;; "; ignoring unsupported logic SCHULTE line: 1 position: 1"
-;; NIL
-;;
-;; Just have to start a threaded reader which continually tries to
-;; read, and pushes read values into an output queue.
-
 (defvar *previous-readtables* nil)
 
 (defun read-preserving-case (stream char n)
