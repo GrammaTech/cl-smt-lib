@@ -6,6 +6,7 @@
    :curry-compose-reader-macros
    :iterate
    :metabang-bind
-   :split-sequence
-   :cl-ppcre)
-  (:export :*solver* :smt :solver :>> :<<))
+   :split-sequence)
+  (:export
+   :enable-preserving-case-syntax
+   :disable-preserving-case-syntax))
