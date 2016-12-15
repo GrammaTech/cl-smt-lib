@@ -33,11 +33,11 @@
   '(eval-when (:compile-toplevel :load-toplevel :execute)
     (setf *readtable* (pop *previous-readtables*))))
 
-(defvar *smt-debug-stream* nil "Optional stream to echo all SMT input.")
+(defvar *smt-debug-stream* nil "Optional stream to echo all SMT-WRITE output.")
 
-(defun smt (stream forms)
-  "Print FORMS to STREAM preserving case.
-SMT is suitable to print case-sensitive forms in smtlib2 format."
+(defun smt-write (stream forms)
+  "Write FORMS to STREAM preserving case.
+SMT-WRITE is suitable to print case-sensitive forms in smtlib2 format."
   ;; Setting the `readtable-case' to :PRESERVE ensures `format'
   ;; doesn't print pipes around variable names.
   (let ((*readtable* (copy-readtable nil)))

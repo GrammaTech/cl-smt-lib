@@ -5,8 +5,8 @@ reading of forms (suitable for building queries in the case-sensitive
 smt-libv2 language).  It also provides `program-stream` suitable for
 calling an SMT solver and wrapping it in a two-way stream allowing the
 writing of smt-libv2 forms to the solver and the reading of results.
-The included `smt` function facilitates writing these forms to the
-solver.
+The included `smt-write` function facilitates writing these forms to
+the solver.
 
 The following example demonstrates the use of CL-SMT to write a query
 to a running smt solver process (in this case CVC4), and read back the
@@ -19,7 +19,7 @@ CL-SMT> (setf *stream* (program-stream "cvc4" '("--lang=smt2")))
 #<TWO-WAY-STREAM
   :INPUT-STREAM #<SB-SYS:FD-STREAM for "descriptor 63" {1004BF10D3}>
   :OUTPUT-STREAM #<SB-SYS:FD-STREAM for "descriptor 62" {1004BF0C13}>>
-CL-SMT> (smt *stream*
+CL-SMT> (smt-write *stream*
           (let ((range 8))
             #!`((set-option :produce-models true)
                 (set-logic QF_BV)
