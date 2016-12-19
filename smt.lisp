@@ -1,17 +1,35 @@
 (in-package :cl-smt)
 
-;;; From http://stackoverflow.com/questions/15988870/~
-;;;             how-to-interact-with-a-process-input-output-in-sbcl-common-lisp
-(defun program-stream (program &optional args)
+(defstruct (smt (:include two-way-stream)
+             (:constructor %make-smt (input-stream output-stream process))
+             (:copier nil)
+             (:predicate nil))
+  (process (sb-impl::missing-arg) :read-only t))
+
+#+sbcl (sb-impl::defprinter (smt) process input-stream output-stream)
+
+(defun make-smt (program &optional args)
+  "Wrap PROCESS in an SMT object"
   (let ((process #+sbcl (sb-ext:run-program program args
                                             :input :stream
                                             :output :stream
                                             :wait nil
                                             :search t)
                  #-sbcl (error "CL-SMT currently only supports SBCL.")))
-    (when process
-      (make-two-way-stream (sb-ext:process-output process)
-                           (sb-ext:process-input process)))))
+    (%make-smt (sb-ext:process-output process)
+               (sb-ext:process-input process)
+               process)))
+
+(defun write-to-smt (smt forms &optional debug-stream)
+  "Write FORMS to the process in SMT over it's STDIN.
+Sets READTABLE-CASE to :PRESERVE to ensure printing in valid
+case-sensitive smt libv2 format."
+  (let ((*readtable* (copy-readtable nil))
+        (format-string "~{~S~^~%~}~%"))
+    (setf (readtable-case *readtable*) :preserve)
+    (format smt format-string forms)
+    (when debug-stream (format debug-stream format-string forms))
+    (finish-output smt)))
 
 (defvar *previous-readtables* nil
   "Holds *readtable* before cl-smt enabled the #! case preserving reader.")
@@ -32,17 +50,3 @@
   "Un-register the #! reader macro restoring the previous *readtable*."
   '(eval-when (:compile-toplevel :load-toplevel :execute)
     (setf *readtable* (pop *previous-readtables*))))
-
-(defvar *smt-debug-stream* nil "Optional stream to echo all SMT-WRITE output.")
-
-(defun smt-write (stream forms)
-  "Write FORMS to STREAM preserving case.
-SMT-WRITE is suitable to print case-sensitive forms in smtlib2 format."
-  ;; Setting the `readtable-case' to :PRESERVE ensures `format'
-  ;; doesn't print pipes around variable names.
-  (let ((*readtable* (copy-readtable nil)))
-    (setf (readtable-case *readtable*) :preserve)
-    (mapc (lambda (form) (format stream "~S~%~%" form)) forms)
-    (when *smt-debug-stream*
-      (mapc (lambda (form) (format *smt-debug-stream* "~S~%~%" form)) forms))
-    (finish-output stream)))
