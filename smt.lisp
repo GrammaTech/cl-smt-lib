@@ -20,7 +20,7 @@
                (sb-ext:process-input process)
                process)))
 
-(defun write-to-smt (smt forms &optional debug-stream)
+(defun write-to-smt (smt forms)
   "Write FORMS to the process in SMT over it's STDIN.
 Sets READTABLE-CASE to :PRESERVE to ensure printing in valid
 case-sensitive smt libv2 format."
@@ -28,7 +28,6 @@ case-sensitive smt libv2 format."
         (format-string "~{~S~^~%~}~%"))
     (setf (readtable-case *readtable*) :preserve)
     (format smt format-string forms)
-    (when debug-stream (format debug-stream format-string forms))
     (finish-output smt)))
 
 (defvar *previous-readtables* nil
