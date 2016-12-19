@@ -4,4 +4,8 @@
    :make-smt
    :write-to-smt
    :enable-preserving-case-syntax
-   :disable-preserving-case-syntax))
+   :disable-preserving-case-syntax
+   ;; smt accessors
+   :smt-output-stream
+   :smt-input-stream
+   :smt-process))
