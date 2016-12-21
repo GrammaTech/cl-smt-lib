@@ -10,7 +10,8 @@ arguments and returns an smt object holding the process and the input
 and output streams.  This process may be read from and written to like
 any other stream.
 
-The `#!` reader macro enables case-sensitive reading of forms.
+The `#!` reader macro enables case-sensitive reading of forms into
+common lisp.
 
 The `write-to-smt` function facilitates writing case-sensitive forms
 to the solver.
