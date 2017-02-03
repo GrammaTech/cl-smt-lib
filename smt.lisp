@@ -20,6 +20,13 @@
                (sb-ext:process-input process)
                process)))
 
+(define-condition smt-error (error)
+  ((text :initarg :text :initform nil :reader text)
+   (smt :initarg :smt :initform nil :reader smt))
+  (:report (lambda (condition stream)
+             (format stream "SMT: ~a~%~S"
+                     (text condition) (smt condition)))))
+
 (defun write-to-smt (smt forms)
   "Write FORMS to the process in SMT over it's STDIN.
 Sets READTABLE-CASE to :PRESERVE to ensure printing in valid
@@ -29,6 +36,34 @@ case-sensitive smt libv2 format."
     (setf (readtable-case *readtable*) :preserve)
     (format smt format-string forms)
     (finish-output smt)))
+
+(defun read-from-smt (smt &optional preserve-case-p (eof-error-p t) eof-value)
+  "Write FORMS to the process in SMT over it's STDIN.
+Sets READTABLE-CASE to :PRESERVE to ensure printing in valid
+case-sensitive smt libv2 format."
+  (let ((*readtable* (copy-readtable nil)))
+    (when preserve-case-p
+      (setf (readtable-case *readtable*) :preserve))
+    (let ((value (read smt eof-error-p eof-value)))
+      (restart-case
+          (if (and (listp value)
+                   (equal (if preserve-case-p '|error| 'ERROR) (car value)))
+              (error (make-condition 'smt-error
+                       :text (second value)
+                       :smt smt))
+              value)
+        (ignore-smt-error () :report "Ignore SMT error." nil)
+        (return-smt-error () :report "Return SMT error." value)))))
+
+(defmacro with-smt ((smt (program &optional args) &optional preserve-case-p)
+                    &body body)
+  (let ((form (gensym)))
+    `(with-open-stream (,smt (make-smt ,program ,args))
+       ,@body
+       (close (smt-output-stream ,smt))
+       (loop :for ,form = (read-from-smt ,smt ,preserve-case-p nil :eof)
+          :while (not (equal :eof ,form))
+          :collect ,form))))
 
 (defvar *previous-readtables* nil
   "Holds *readtable* before cl-smt enabled the #! case preserving reader.")
