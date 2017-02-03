@@ -1,4 +1,4 @@
-(in-package :cl-smt)
+(in-package :cl-smt-lib)
 
 (defstruct (smt (:include two-way-stream)
              (:constructor %make-smt (input-stream output-stream process))
@@ -15,7 +15,7 @@
                                             :output :stream
                                             :wait nil
                                             :search t)
-                 #-sbcl (error "CL-SMT currently only supports SBCL.")))
+                 #-sbcl (error "CL-SMT-LIB currently only supports SBCL.")))
     (%make-smt (sb-ext:process-output process)
                (sb-ext:process-input process)
                process)))
@@ -66,7 +66,7 @@ case-sensitive smt libv2 format."
           :collect ,form))))
 
 (defvar *previous-readtables* nil
-  "Holds *readtable* before cl-smt enabled the #! case preserving reader.")
+  "Holds *readtable* before cl-smt-lib enabled the #! case preserving reader.")
 
 (defun read-preserving-case (stream char n)
   (declare (ignorable char) (ignorable n))

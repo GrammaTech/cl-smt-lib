@@ -1,7 +1,7 @@
-(defsystem :cl-smt
+(defsystem :cl-smt-lib
   :description "Common Lisp interface to SMT Lib 2"
-  :version "0.0.0"
+  :version "1.0.0"
   :author "Eric Schulte <eschulte@grammatech.com>"
-  :licence "GPL V3"
+  :licence "Public Domain"
   :components ((:file "package")
-               (:file "smt" :depends-on ("package"))))
+               (:file "smt-lib" :depends-on ("package"))))

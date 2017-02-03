@@ -1,9 +1,9 @@
-# CL-SMT -- Common Lisp smt-lib Integration
+# CL-SMT-LIB -- Common Lisp SMT-Lib Integration
 
-CL-SMT is a minimal package providing an SMT object encapsulating an
-SMT solver process with input and output streams, as well as support
-for reading case sensitive smt-lib forms into lisp and writing these
-forms to an SMT solver process.
+CL-SMT-LIB is a minimal package providing an SMT object encapsulating
+an SMT solver process with input and output streams, as well as
+support for reading case sensitive smt-lib forms into lisp and writing
+these forms to an SMT solver process.
 
 The `make-smt` function takes a program name and command line
 arguments and returns an smt object holding the process and the input
@@ -16,44 +16,44 @@ common lisp.
 The `write-to-smt` function facilitates writing case-sensitive forms
 to the solver.
 
-The following example demonstrates the use of CL-SMT to launch a
+The following example demonstrates the use of CL-SMT-LIB to launch a
 solver process, write a query to the solver, and read back the
 results.
 
 ```
-CL-SMT> (enable-preserving-case-syntax)
+CL-SMT-LIB> (enable-preserving-case-syntax)
 T
-CL-SMT> (defvar smt (make-smt "cvc4" '("--lang=smt2")))
+CL-SMT-LIB> (defvar smt (make-smt "cvc4" '("--lang=smt2")))
 SMT
-CL-SMT> smt
+CL-SMT-LIB> smt
 #<SMT
   :PROCESS #<SB-IMPL::PROCESS 24691 :RUNNING>
   :INPUT-STREAM #<SB-SYS:FD-STREAM for "descriptor 10" {1002F3AB13}>
   :OUTPUT-STREAM #<SB-SYS:FD-STREAM for "descriptor 9" {1002F3A713}>>
-CL-SMT> (write-to-smt smt
-                      (let ((range 8))
-                        #!`((set-option :produce-models true)
-                            (set-logic QF_BV)
+CL-SMT-LIB> (write-to-smt smt
+                          (let ((range 8))
+                            #!`((set-option :produce-models true)
+                                (set-logic QF_BV)
 
-                            (define-fun hamming-weight ((bv (_ BitVec ,RANGE)))
-                                (_ BitVec ,RANGE)
-                              ,(REDUCE (LAMBDA (ACC N)
-                                         `(bvadd ,ACC ((_ zero_extend ,(1- RANGE))
-                                                       ((_ extract ,N ,N) bv))))
-                                       (LOOP :FOR I :UPFROM 1 :BELOW (1- RANGE) :COLLECT I)
-                                       :INITIAL-VALUE
-                                       `((_ zero_extend ,(1- RANGE)) ((_ extract 0 0) bv))))
-                            (declare-const example1 (_ BitVec ,RANGE))
-                            (declare-const example2 (_ BitVec ,RANGE))
-                            (assert (= (_ bv3 ,RANGE) (hamming-weight example1)))
-                            (assert (= (_ bv3 ,RANGE) (hamming-weight example2)))
-                            (assert (distinct example1 example2))
-                            (check-sat)
-                            (get-model))))
+                                (define-fun hamming-weight ((bv (_ BitVec ,RANGE)))
+                                    (_ BitVec ,RANGE)
+                                  ,(REDUCE (LAMBDA (ACC N)
+                                             `(bvadd ,ACC ((_ zero_extend ,(1- RANGE))
+                                                           ((_ extract ,N ,N) bv))))
+                                           (LOOP :FOR I :UPFROM 1 :BELOW (1- RANGE) :COLLECT I)
+                                           :INITIAL-VALUE
+                                           `((_ zero_extend ,(1- RANGE)) ((_ extract 0 0) bv))))
+                                (declare-const example1 (_ BitVec ,RANGE))
+                                (declare-const example2 (_ BitVec ,RANGE))
+                                (assert (= (_ bv3 ,RANGE) (hamming-weight example1)))
+                                (assert (= (_ bv3 ,RANGE) (hamming-weight example2)))
+                                (assert (distinct example1 example2))
+                                (check-sat)
+                                (get-model))))
 NIL
-CL-SMT> (read smt)
+CL-SMT-LIB> (read smt)
 SAT
-CL-SMT> (read smt)
+CL-SMT-LIB> (read smt)
 (MODEL (DEFINE-FUN EXAMPLE1 NIL (_ BITVEC 8) (_ BV97 8))
  (DEFINE-FUN EXAMPLE2 NIL (_ BITVEC 8) (_ BV225 8)))
 ```
@@ -62,26 +62,26 @@ Since `write-to-smt` takes any stream as it's first argument you can
 preview the text sent to the smt solver by passing `t` as the first
 argument.
 ```
-CL-SMT> (write-to-smt t
-                      (let ((range 8))
-                        #!`((set-option :produce-models true)
-                            (set-logic QF_BV)
+CL-SMT-LIB> (write-to-smt t
+                          (let ((range 8))
+                            #!`((set-option :produce-models true)
+                                (set-logic QF_BV)
 
-                            (define-fun hamming-weight ((bv (_ BitVec ,RANGE)))
-                                (_ BitVec ,RANGE)
-                              ,(REDUCE (LAMBDA (ACC N)
-                                         `(bvadd ,ACC ((_ zero_extend ,(1- RANGE))
-                                                       ((_ extract ,N ,N) bv))))
-                                       (LOOP :FOR I :UPFROM 1 :BELOW (1- RANGE) :COLLECT I)
-                                       :INITIAL-VALUE
-                                       `((_ zero_extend ,(1- RANGE)) ((_ extract 0 0) bv))))
-                            (declare-const example1 (_ BitVec ,RANGE))
-                            (declare-const example2 (_ BitVec ,RANGE))
-                            (assert (= (_ bv3 ,RANGE) (hamming-weight example1)))
-                            (assert (= (_ bv3 ,RANGE) (hamming-weight example2)))
-                            (assert (distinct example1 example2))
-                            (check-sat)
-                            (get-model))))
+                                (define-fun hamming-weight ((bv (_ BitVec ,RANGE)))
+                                    (_ BitVec ,RANGE)
+                                  ,(REDUCE (LAMBDA (ACC N)
+                                             `(bvadd ,ACC ((_ zero_extend ,(1- RANGE))
+                                                           ((_ extract ,N ,N) bv))))
+                                           (LOOP :FOR I :UPFROM 1 :BELOW (1- RANGE) :COLLECT I)
+                                           :INITIAL-VALUE
+                                           `((_ zero_extend ,(1- RANGE)) ((_ extract 0 0) bv))))
+                                (declare-const example1 (_ BitVec ,RANGE))
+                                (declare-const example2 (_ BitVec ,RANGE))
+                                (assert (= (_ bv3 ,RANGE) (hamming-weight example1)))
+                                (assert (= (_ bv3 ,RANGE) (hamming-weight example2)))
+                                (assert (distinct example1 example2))
+                                (check-sat)
+                                (get-model))))
 (set-option :produce-models true)
 (set-logic QF_BV)
 (define-fun hamming-weight ((bv (_ BitVec 8))) (_ BitVec 8)
@@ -105,5 +105,5 @@ CL-SMT> (write-to-smt t
 (check-sat)
 (get-model)
 NIL
-CL-SMT> 
+CL-SMT-LIB> 
 ```

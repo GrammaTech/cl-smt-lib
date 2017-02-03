@@ -1,4 +1,4 @@
-(defpackage :cl-smt
+(defpackage :cl-smt-lib
   (:use :common-lisp)
   (:export
    :make-smt
