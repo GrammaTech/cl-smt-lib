@@ -59,11 +59,16 @@ case-sensitive smt libv2 format."
                     &body body)
   (let ((form (gensym)))
     `(with-open-stream (,smt (make-smt ,program ,args))
-       ,@body
-       (close (smt-output-stream ,smt))
-       (loop :for ,form = (read-from-smt ,smt ,preserve-case-p nil :eof)
-          :while (not (equal :eof ,form))
-          :collect ,form))))
+       (unwind-protect
+            (progn
+              ,@body
+              (close (smt-output-stream ,smt))
+              (loop :for ,form = (read-from-smt ,smt ,preserve-case-p nil :eof)
+                 :while (not (equal :eof ,form))
+                 :collect ,form))
+         ;; Ensure the process is terminated.
+         #+sbcl (sb-ext:process-kill (smt-process ,smt) sb-unix:sigterm)
+         #-sbcl (error "CL-SMT-LIB currently only supports SBCL.")))))
 
 (defvar *previous-readtables* nil
   "Holds *readtable* before cl-smt-lib enabled the #! case preserving reader.")
