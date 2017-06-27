@@ -107,3 +107,7 @@ CL-SMT-LIB> (write-to-smt t
 NIL
 CL-SMT-LIB> 
 ```
+
+The special variable `*smt-debug*` may be used to copy smt input and
+output to a stream for debugging.  Set `*smt-debug*` to `t` to echo
+all input and output to STDOUT.

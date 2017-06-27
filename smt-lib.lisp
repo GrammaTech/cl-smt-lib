@@ -1,5 +1,8 @@
 (in-package :cl-smt-lib)
 
+(defvar *smt-debug* nil
+  "Set to a stream to duplicate smt input and output to the *SMT-DEBUG*.")
+
 (defstruct (smt (:include two-way-stream)
              (:constructor %make-smt (input-stream output-stream process))
              (:copier nil)
@@ -35,6 +38,10 @@ case-sensitive smt libv2 format."
         (format-string "~{~S~^~%~}~%"))
     (setf (readtable-case *readtable*) :preserve)
     (format smt format-string forms)
+    (when *smt-debug*
+      (format *smt-debug* "~&;; WRITE-TO-SMT~%")
+      (format *smt-debug* format-string forms)
+      (finish-output *smt-debug*))
     (finish-output smt)))
 
 (defun read-from-smt (smt &optional preserve-case-p (eof-error-p t) eof-value)
@@ -45,6 +52,10 @@ case-sensitive smt libv2 format."
     (when preserve-case-p
       (setf (readtable-case *readtable*) :preserve))
     (let ((value (read smt eof-error-p eof-value)))
+      (when *smt-debug*
+        (format *smt-debug* "~&;; READ-FROM-SMT~%")
+        (write value :stream *smt-debug*)
+        (finish-output *smt-debug*))
       (restart-case
           (if (and (listp value)
                    (equal (if preserve-case-p '|error| 'ERROR) (car value)))

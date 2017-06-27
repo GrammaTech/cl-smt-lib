@@ -10,6 +10,7 @@
    :with-smt
    :enable-preserving-case-syntax
    :disable-preserving-case-syntax
+   :*smt-debug*
    ;; smt accessors
    :smt-output-stream
    :smt-input-stream
