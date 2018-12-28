@@ -1,6 +1,6 @@
 ;;; cl-smt-lib.lisp --- Common Lisp SMT-Lib Integration
 (defpackage :cl-smt-lib
-  (:use :common-lisp)
+  (:use :common-lisp :named-readtables)
   (:export
    :make-smt
    :smt-error
@@ -9,8 +9,6 @@
    :write-to-smt
    :read-from-smt
    :with-smt
-   :enable-preserving-case-syntax
-   :disable-preserving-case-syntax
    :*smt-debug*
    ;; smt accessors
    :smt-output-stream
@@ -99,22 +97,12 @@ case-sensitive smt libv2 format."
          #+sbcl (sb-ext:process-kill (smt-process ,smt) sb-unix:sigterm)
          #-sbcl (error "CL-SMT-LIB currently only supports SBCL.")))))
 
-(defvar *previous-readtables* nil
-  "Holds *readtable* before cl-smt-lib enabled the #! case preserving reader.")
-
 (defun read-preserving-case (stream char n)
   (declare (ignorable char) (ignorable n))
   (let ((*readtable* (copy-readtable nil)))
     (setf (readtable-case *readtable*) :preserve)
     (read stream t nil t)))
 
-(defmacro enable-preserving-case-syntax ()
-  "Register the #! reader macro to read the next form preserving case."
-  '(eval-when (:compile-toplevel :load-toplevel :execute)
-    (push *readtable* *previous-readtables*)
-    (set-dispatch-macro-character #\# #\! #'read-preserving-case)))
-
-(defmacro disable-preserving-case-syntax ()
-  "Un-register the #! reader macro restoring the previous *readtable*."
-  '(eval-when (:compile-toplevel :load-toplevel :execute)
-    (setf *readtable* (pop *previous-readtables*))))
+(defreadtable :cl-smt-lib
+  (:merge :current)
+  (:dispatch-macro-char #\# #\! #'read-preserving-case))
