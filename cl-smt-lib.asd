@@ -3,5 +3,4 @@
   :version "1.0.0"
   :author "Eric Schulte <eschulte@grammatech.com>"
   :licence "Public Domain"
-  :components ((:file "package")
-               (:file "smt-lib" :depends-on ("package"))))
+  :components ((:file "smt-lib")))
