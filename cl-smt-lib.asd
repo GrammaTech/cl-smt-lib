@@ -1,7 +1,8 @@
 (defsystem :cl-smt-lib
-  :description "Common Lisp interface to SMT Lib 2"
+  :description
+  "SMT object supporting SMT-LIB communication over input and output streams"
   :version "1.0.0"
   :author "Eric Schulte <eschulte@grammatech.com>"
-  :licence "Public Domain"
+  :licence "BSD-3-Clause"
   :depends-on (named-readtables)
   :components ((:file "cl-smt-lib")))
