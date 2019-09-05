@@ -119,3 +119,12 @@ The following options should work to define smt objects for popular
 SMT solvers.
 | [Z3](https://github.com/Z3Prover/z3)     | `(make-smt "z3" '("-in" "-smt2"))`   |
 | [CVC4](http://cvc4.cs.stanford.edu/web/) | `(make-smt "cvc4" '("--lang=smt2"))` |
+
+## Acknowledgment
+
+The project or effort depicted was sponsored by the Air Force Research
+Laboratory (AFRL) and the Defense Advanced Research Projects Agency
+(DARPA) under contract no. FA8750-15-C-0113. Any opinions, findings,
+and conclusions or recommendations expressed in this material are
+those of the author(s) and do not necessarily reflect the views of
+AFRL or DARPA.
