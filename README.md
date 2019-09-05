@@ -117,8 +117,12 @@ all input and output to STDOUT.
 
 The following options should work to define smt objects for popular
 SMT solvers.
-| [Z3](https://github.com/Z3Prover/z3)     | `(make-smt "z3" '("-in" "-smt2"))`   |
-| [CVC4](http://cvc4.cs.stanford.edu/web/) | `(make-smt "cvc4" '("--lang=smt2"))` |
+
+[Z3](https://github.com/Z3Prover/z3)
+:   `(make-smt "z3" '("-in" "-smt2"))`
+
+[CVC4](http://cvc4.cs.stanford.edu/web/)
+:   `(make-smt "cvc4" '("--lang=smt2"))`
 
 ## Acknowledgment
 
