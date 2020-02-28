@@ -133,6 +133,7 @@ case-sensitive smt libv2 format."
     (setf (readtable-case *readtable*) :preserve)
     (read stream t nil t)))
 
-(defreadtable :cl-smt-lib
-  (:merge :current)
-  (:dispatch-macro-char #\# #\! #'read-preserving-case))
+(unless (find-readtable :cl-smt-lib)
+  (defreadtable :cl-smt-lib
+    (:merge :current)
+    (:dispatch-macro-char #\# #\! #'read-preserving-case)))
