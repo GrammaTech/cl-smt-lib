@@ -1,10 +1,10 @@
 ;;; cl-smt-lib.lisp --- Common Lisp SMT-Lib Integration
 (defpackage :cl-smt-lib
   (:use :common-lisp :named-readtables)
-  (:import-from :cl-plumbing
-                :locked-two-way-stream
-                :input-of
-                :output-of)
+  (:import-from :trivial-gray-streams
+                :fundamental-input-stream
+                :fundamental-output-stream
+                :trivial-gray-stream-mixin)
   (:import-from :uiop/launch-program
                 :launch-program
                 :terminate-process
@@ -26,19 +26,18 @@
 (in-package :cl-smt-lib)
 #+debug (declaim (optimize (debug 3)))
 
-#-(or ccl sbcl) (error "CL-SMT-LIB is only implemented for CCL and SBCL.")
-
 (defvar *smt-debug* nil
   "Set to a stream to duplicate smt input and output to the *SMT-DEBUG*.")
 
 ;;; Implementation depends on if two-way-stream is a class or structure.
 
-(defclass smt (locked-two-way-stream)
-  ((process :initarg :process :initform (error "process argument is required")
+(defclass smt (fundamental-input-stream
+               fundamental-output-stream
+               trivial-gray-stream-mixin)
+  ((input :initarg :input :accessor smt-input-stream)
+   (output :initarg :output :accessor smt-output-stream)
+   (process :initarg :process :initform (error "process argument is required")
             :reader smt-process)))
-
-(defmethod smt-input-stream ((smt smt)) (input-of smt))
-(defmethod smt-output-stream ((smt smt)) (output-of smt))
 
 (defun make-smt (program &rest args)
   "Wrap PROCESS in an SMT object."
@@ -51,6 +50,26 @@
       :input (process-info-output process)
       :output (process-info-input process)
       :process process)))
+
+;;; Trivial-gray-stream definitions. TODO: hanging.
+(defmethod trivial-gray-streams:stream-read-char ((smt smt))
+  (read-char (smt-input-stream smt)))
+(defmethod trivial-gray-streams:stream-read-line ((smt smt))
+  (read-line (smt-input-stream smt)))
+(defmethod trivial-gray-streams:stream-read-sequence
+    ((smt smt) sequence start end &key &allow-other-keys)
+  (read-sequence sequence (smt-input-stream smt) :start start :end end))
+(defmethod trivial-gray-streams:stream-unread-char ((smt smt) character)
+  (unread-char character (smt-input-stream smt)))
+(defmethod trivial-gray-streams:stream-line-column ((smt smt)) 0)
+(defmethod trivial-gray-streams:stream-write-char ((smt smt) character)
+  (write-char character (smt-output-stream smt)))
+(defmethod trivial-gray-streams:stream-write-sequence
+    ((smt smt) sequence start end &key &allow-other-keys)
+  (write-sequence sequence (smt-output-stream smt) :start start :end end))
+(defmethod trivial-gray-streams:stream-write-string
+    (stream string &optional (start 0) end)
+  (write-string string (smt-output-stream smt) :start start :end end))
 
 (define-condition smt-error (error)
   ((text :initarg :text :initform nil :reader text)
