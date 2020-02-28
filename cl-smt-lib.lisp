@@ -1,6 +1,11 @@
 ;;; cl-smt-lib.lisp --- Common Lisp SMT-Lib Integration
 (defpackage :cl-smt-lib
   (:use :common-lisp :named-readtables)
+  (:import-from :uiop/launch-program
+                :launch-program
+                :terminate-process
+                :process-info-input
+                :process-info-output)
   (:export
    :make-smt
    :smt-error
@@ -15,29 +20,53 @@
    :smt-input-stream
    :smt-process))
 (in-package :cl-smt-lib)
+#+debug (declaim (optimize (debug 3)))
 
 (defvar *smt-debug* nil
   "Set to a stream to duplicate smt input and output to the *SMT-DEBUG*.")
 
+;;; The type of two-way-stream
+
+#+sbcl
+(progn
 (defstruct (smt (:include two-way-stream)
              (:constructor %make-smt (input-stream output-stream process))
              (:copier nil)
              (:predicate nil))
   (process (sb-impl::missing-arg) :read-only t))
 
-#+sbcl (sb-impl::defprinter (smt) process input-stream output-stream)
+(sb-impl::defprinter (smt) process input-stream output-stream)
+)
 
-(defun make-smt (program &optional args)
-  "Wrap PROCESS in an SMT object"
-  (let ((process #+sbcl (sb-ext:run-program program args
-                                            :input :stream
-                                            :output :stream
-                                            :wait nil
-                                            :search t)
-                 #-sbcl (error "CL-SMT-LIB currently only supports SBCL.")))
-    (%make-smt (sb-ext:process-output process)
-               (sb-ext:process-input process)
-               process)))
+#+ccl
+(progn
+(defclass smt (two-way-stream)
+  ((process :initarg :process :initform (error "process argument is required")
+            :reader process)))
+
+(defmethod smt-input-stream ((smt smt))
+  (ccl::two-way-stream-input-stream smt))
+
+(defmethod smt-output-stream ((smt smt))
+  (ccl::two-way-stream-output-stream smt))
+)
+
+(defun make-smt (program &rest args)
+  "Wrap PROCESS in an SMT object."
+  (let ((process (launch-program (format nil "~{~a~^ ~}" (cons program args))
+                                 :input :stream
+                                 :output :stream
+                                 :wait nil
+                                 :search t)))
+    #+sbcl
+    (%make-smt (process-info-output process)
+               (process-info-input process)
+               process)
+    #+ccl
+    (make-instance 'smt
+      :input-stream (process-info-output process)
+      :output-stream (process-info-input process)
+      :process process)))
 
 (define-condition smt-error (error)
   ((text :initarg :text :initform nil :reader text)
@@ -82,10 +111,10 @@ case-sensitive smt libv2 format."
         (ignore-smt-error () :report "Ignore SMT error." nil)
         (return-smt-error () :report "Return SMT error." value)))))
 
-(defmacro with-smt ((smt (program &optional args) &optional preserve-case-p)
+(defmacro with-smt ((smt (program &rest args) &optional preserve-case-p)
                     &body body)
   (let ((form (gensym)))
-    `(with-open-stream (,smt (make-smt ,program ,args))
+    `(with-open-stream (,smt (make-smt ,program ,@args))
        (unwind-protect
             (progn
               ,@body
@@ -94,8 +123,7 @@ case-sensitive smt libv2 format."
                  :while (not (equal :eof ,form))
                  :collect ,form))
          ;; Ensure the process is terminated.
-         #+sbcl (sb-ext:process-kill (smt-process ,smt) sb-unix:sigterm)
-         #-sbcl (error "CL-SMT-LIB currently only supports SBCL.")))))
+         (terminate-process (smt-process ,smt))))))
 
 (defun read-preserving-case (stream char n)
   (declare (ignorable char) (ignorable n))

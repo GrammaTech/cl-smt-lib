@@ -26,7 +26,7 @@ results.
 ```
 CL-SMT-LIB> (in-readtable :cl-smt-lib)
 T
-CL-SMT-LIB> (defparameter smt (make-smt "z3" '("-in" "-smt2")))
+CL-SMT-LIB> (defparameter smt (make-smt "z3" "-in" "-smt2"))
 SMT
 CL-SMT-LIB> smt
 #<SMT
