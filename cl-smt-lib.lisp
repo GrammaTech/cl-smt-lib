@@ -22,10 +22,12 @@
 (in-package :cl-smt-lib)
 #+debug (declaim (optimize (debug 3)))
 
+#-(or ccl sbcl) (error "CL-SMT-LIB is only implemented for CCL and SBCL.")
+
 (defvar *smt-debug* nil
   "Set to a stream to duplicate smt input and output to the *SMT-DEBUG*.")
 
-;;; The type of two-way-stream
+;;; Implementation depends on if two-way-stream is a class or structure.
 
 #+sbcl
 (progn
@@ -38,17 +40,17 @@
 (sb-impl::defprinter (smt) process input-stream output-stream)
 )
 
-#+ccl
+#+(or ccl ecl)
 (progn
 (defclass smt (two-way-stream)
   ((process :initarg :process :initform (error "process argument is required")
             :reader process)))
 
 (defmethod smt-input-stream ((smt smt))
-  (ccl::two-way-stream-input-stream smt))
+  (two-way-stream-input-stream smt))
 
 (defmethod smt-output-stream ((smt smt))
-  (ccl::two-way-stream-output-stream smt))
+  (two-way-stream-output-stream smt))
 )
 
 (defun make-smt (program &rest args)
@@ -62,7 +64,7 @@
     (%make-smt (process-info-output process)
                (process-info-input process)
                process)
-    #+ccl
+    #+(or ecl ccl)
     (make-instance 'smt
       :input-stream (process-info-output process)
       :output-stream (process-info-input process)
