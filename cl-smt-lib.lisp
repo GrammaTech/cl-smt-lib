@@ -1,10 +1,6 @@
 ;;; cl-smt-lib.lisp --- Common Lisp SMT-Lib Integration
 (defpackage :cl-smt-lib
   (:use :common-lisp :named-readtables)
-  (:import-from :cl-plumbing
-                :locked-two-way-stream
-                :input-of
-                :output-of)
   (:import-from :uiop/launch-program
                 :launch-program
                 :terminate-process
@@ -33,12 +29,29 @@
 
 ;;; Implementation depends on if two-way-stream is a class or structure.
 
-(defclass smt (locked-two-way-stream)
-  ((process :initarg :process :initform (error "process argument is required")
-            :reader smt-process)))
+#+sbcl
+(progn
+(defstruct (smt (:include two-way-stream)
+             (:constructor %make-smt (input-stream output-stream process))
+             (:copier nil)
+             (:predicate nil))
+  (process (sb-impl::missing-arg) :read-only t))
 
-(defmethod smt-input-stream ((smt smt)) (input-of smt))
-(defmethod smt-output-stream ((smt smt)) (output-of smt))
+(sb-impl::defprinter (smt) process input-stream output-stream)
+)
+
+#+(or ccl ecl)
+(progn
+(defclass smt (two-way-stream)
+  ((process :initarg :process :initform (error "process argument is required")
+            :reader process)))
+
+(defmethod smt-input-stream ((smt smt))
+  (two-way-stream-input-stream smt))
+
+(defmethod smt-output-stream ((smt smt))
+  (two-way-stream-output-stream smt))
+)
 
 (defun make-smt (program &rest args)
   "Wrap PROCESS in an SMT object."
@@ -47,9 +60,14 @@
                                  :output :stream
                                  :wait nil
                                  :search t)))
+    #+sbcl
+    (%make-smt (process-info-output process)
+               (process-info-input process)
+               process)
+    #+(or ecl ccl)
     (make-instance 'smt
-      :input (process-info-output process)
-      :output (process-info-input process)
+      :input-stream (process-info-output process)
+      :output-stream (process-info-input process)
       :process process)))
 
 (define-condition smt-error (error)
