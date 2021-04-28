@@ -14,6 +14,9 @@
 (defmethod stream-read-char ((stream fundamental-two-way-stream))
   (read-char (input stream)))
 
+(defmethod stream-read-char-no-hang ((stream fundamental-two-way-stream))
+  (read-char-no-hang (input stream)))
+
 (defmethod stream-read-line ((stream fundamental-two-way-stream))
   (read-line (input stream)))
 
