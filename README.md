@@ -61,7 +61,7 @@ CL-SMT-LIB> (read smt)
  (DEFINE-FUN EXAMPLE1 NIL (_ BITVEC 8) 97))
 ```
 
-Since `write-to-smt` takes any stream as it's first argument you can
+Since `write-to-smt` takes any stream as its first argument you can
 preview the text sent to the smt solver by passing `t` as the first
 argument.
 ```
