@@ -19,6 +19,7 @@
                                  :wait nil
                                  :search t)))
     (make-instance 'process-two-way-stream
+      :element-type '(unsigned-byte 8)
       :input (process-info-output process)
       :output (process-info-input process)
       :process process)))
