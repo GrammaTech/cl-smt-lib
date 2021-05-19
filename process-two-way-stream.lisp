@@ -1,7 +1,10 @@
 (defpackage :cl-smt-lib/process-two-way-stream
   (:use :cl :cl-smt-lib/fundamental-two-way-stream :uiop/launch-program)
   (:export :process-two-way-stream
-           :make-process-two-way-stream))
+           :make-process-two-way-stream
+           :input
+           :output
+           :process))
 (in-package :cl-smt-lib/process-two-way-stream)
 
 ;;; A process wrapped in a two-way stream.

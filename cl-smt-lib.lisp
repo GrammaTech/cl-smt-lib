@@ -2,7 +2,7 @@
 (defpackage :cl-smt-lib/cl-smt-lib
   (:nicknames :cl-smt-lib)
   (:use :common-lisp :named-readtables :cl-smt-lib/process-two-way-stream)
-  (:import-from :uiop/launch-program :terminate-process)
+  (:import-from :uiop/launch-program :terminate-process :wait-process)
   (:export
    :make-smt
    :smt-error
@@ -76,13 +76,17 @@ case-sensitive smt libv2 format."
 
 (defmacro with-smt ((smt (program &rest args) &optional preserve-case-p)
                     &body body)
-  (let ((form (gensym)))
+  (declare (ignore preserve-case-p))
+  (let ((form (gensym))
+        (status (gensym)))
     `(with-open-stream (,smt (make-smt ,program ,@args))
        (unwind-protect
             (progn
               ,@body
               (close (output ,smt))
-              (loop :for ,form = (read-from-smt ,smt ,preserve-case-p nil :eof)
+              (let ((,status (wait-process (process ,smt))))
+                (unless (zerop ,status) (error "SMT solver failed with exit status ~S" ,status)))
+              (loop :for ,form = (read ,smt nil :eof)
                  :while (not (equal :eof ,form))
                  :collect ,form))
          ;; Ensure the process is terminated.

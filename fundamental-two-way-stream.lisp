@@ -1,6 +1,6 @@
 (defpackage :cl-smt-lib/fundamental-two-way-stream
   (:use :cl :trivial-gray-streams)
-  (:export :fundamental-two-way-stream))
+  (:export :fundamental-two-way-stream :input :output))
 (in-package :cl-smt-lib/fundamental-two-way-stream)
 
 (defclass fundamental-two-way-stream
@@ -12,7 +12,7 @@
 
 ;;; Trivial-gray-stream generic function customization.
 (defmethod stream-read-char ((stream fundamental-two-way-stream))
-  (read-char (input stream)))
+  (read-char (input stream) nil :eof))
 
 (defmethod stream-read-char-no-hang ((stream fundamental-two-way-stream))
   (read-char-no-hang (input stream)))
