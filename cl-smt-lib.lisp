@@ -86,7 +86,7 @@ case-sensitive smt libv2 format."
               (close (output ,smt))
               (let ((,status (wait-process (process ,smt))))
                 (unless (zerop ,status) (error "SMT solver failed with exit status ~S" ,status)))
-              (loop :for ,form = (read ,smt nil :eof)
+              (loop :for ,form = (read-from-smt ,smt t nil :eof)
                  :while (not (equal :eof ,form))
                  :collect ,form))
          ;; Ensure the process is terminated.
