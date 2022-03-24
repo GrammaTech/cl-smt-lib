@@ -22,6 +22,9 @@
 (defvar *smt-debug* nil
   "Set to a stream to duplicate smt input and output to the *SMT-DEBUG*.")
 
+(defvar *print-nil-as-list* nil
+  "When bound to non-nil print NIL as the empty list.")
+
 ;;; Implementation depends on if two-way-stream is a class or structure.
 
 (defclass smt (process-two-way-stream) ()
@@ -38,11 +41,17 @@
              (format stream "SMT: ~a~%~S"
                      (text condition) (smt condition)))))
 
+(defmethod print-object :around ((object (eql nil)) stream)
+  (if *print-nil-as-list*
+      (write-string "()" stream)
+      (call-next-method)))
+
 (defun write-to-smt (smt forms)
   "Write FORMS to the process in SMT over it's STDIN.
 Sets READTABLE-CASE to :PRESERVE to ensure printing in valid
 case-sensitive smt libv2 format."
   (let ((*readtable* (copy-readtable nil))
+        (*print-nil-as-list* t)
         (format-string "~{~S~^~%~}~%"))
     (setf (readtable-case *readtable*) :preserve)
     (format smt format-string forms)
